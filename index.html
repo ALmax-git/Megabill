@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Megabill Dashboard</title>
+  
+
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+ <link rel="stylesheet" href="style.css">
+ </head>
+ <body class="h-full">
+  <div x-data="megabillApp()" class="app-wrapper w-full h-full overflow-auto"><!-- Top Bar -->
+   <header class="w-full" style="background: #1e293b; border-bottom: 1px solid rgba(255, 255, 255, 0.06); height: 4rem;">
+    <div class="h-full flex items-center justify-between px-4 md:px-6">
+     <div class="flex items-center gap-4 md:gap-8"><!-- Mobile Menu Button --> <button @click="mobileMenuOpen = true" class="md:hidden p-2 rounded-lg" style="color: #e2e8f0;">
+       <svg width="24" height="24" viewbox="0 0 24 24" fill="none"><path d="M3 12h18M3 6h18M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+       </svg></button>
+      <h1 id="logo" class="text-xl md:text-2xl font-bold" style="color: #3b82f6; letter-spacing: -0.02em;">Megabill</h1>
+      <div class="hidden sm:flex items-center gap-3 px-3 md:px-4 py-2 rounded-lg" style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.06);"><span id="company-name" class="text-xs md:text-sm font-medium" style="color: #e2e8f0;" x-text="config.company_name"></span>
+       <svg width="16" height="16" viewbox="0 0 16 16" fill="none" style="opacity: 0.5;"><path d="M4 6L8 10L12 6" stroke="#e2e8f0" stroke-width="2" stroke-linecap="round" />
+       </svg>
+      </div>
+     </div>
+     <div class="flex items-center gap-2 md:gap-4">
+      <div class="hidden sm:flex items-center gap-2 px-2 md:px-3 py-1.5 rounded-md" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2);"><span style="color: #10b981; font-size: 0.75rem; md:font-size: 0.875rem; font-weight: 500;">Audit Ready</span> <span style="color: #10b981;">✓</span>
+      </div>
+      <div class="w-8 h-8 md:w-9 md:h-9 rounded-full flex items-center justify-center" style="background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);"><span class="text-xs md:text-sm font-semibold" style="color: white;">AC</span>
+      </div>
+     </div>
+    </div>
+   </header><!-- Mobile Menu Overlay -->
+   <div x-show="mobileMenuOpen" x-transition.opacity @click="mobileMenuOpen = false" class="fixed inset-0 z-40 mobile-menu-overlay md:hidden" style="display: none;">
+   </div><!-- Mobile Sidebar -->
+   <aside x-show="mobileMenuOpen" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="-translate-x-full" x-transition:enter-end="translate-x-0" x-transition:leave="transition ease-in duration-300" x-transition:leave-start="translate-x-0" x-transition:leave-end="-translate-x-full" class="fixed top-0 left-0 bottom-0 w-64 z-50 md:hidden" style="background: #1e293b; border-right: 1px solid rgba(255, 255, 255, 0.06); display: none;">
+    <div class="p-4 border-b" style="border-color: rgba(255, 255, 255, 0.06);">
+     <div class="flex items-center justify-between">
+      <h2 class="text-lg font-bold" style="color: #3b82f6;">Menu</h2><button @click="mobileMenuOpen = false" class="p-2 rounded-lg" style="color: #94a3b8;">
+       <svg width="20" height="20" viewbox="0 0 20 20" fill="none"><path d="M15 5L5 15M5 5l10 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+       </svg></button>
+     </div>
+    </div>
+    <nav class="p-4">
+     <template x-for="item in navItems" :key="item.id"><button @click="currentView = item.id; mobileMenuOpen = false" :class="currentView === item.id ? 'active' : ''" class="nav-item w-full text-left px-4 py-3 rounded-lg mb-1 flex items-center gap-3"> <span x-html="item.icon"></span> <span class="text-sm font-medium" :style="currentView === item.id ? 'color: #e2e8f0' : 'color: #94a3b8'" x-text="item.label"></span> </button>
+     </template>
+    </nav>
+   </aside>
+   <div class="flex w-full" style="height: calc(100% - 4rem);"><!-- Desktop Sidebar -->
+    <aside class="hidden md:block w-64" style="background: #1e293b; border-right: 1px solid rgba(255, 255, 255, 0.06);">
+     <nav class="p-4">
+      <template x-for="item in navItems" :key="item.id"><button @click="currentView = item.id" :class="currentView === item.id ? 'active' : ''" class="nav-item w-full text-left px-4 py-3 rounded-lg mb-1 flex items-center gap-3"> <span x-html="item.icon"></span> <span class="text-sm font-medium" :style="currentView === item.id ? 'color: #e2e8f0' : 'color: #94a3b8'" x-text="item.label"></span> </button>
+      </template>
+     </nav>
+    </aside><!-- Main Content Area -->
+    <main class="flex-1 overflow-auto w-full"><!-- Dashboard View -->
+     <div x-show="currentView === 'dashboard'" class="p-4 md:p-8">
+      <h2 class="text-2xl md:text-3xl font-bold mb-6 md:mb-8" style="color: #f8fafc;">Dashboard</h2><!-- Financial Summary Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
+       <div class="card rounded-xl p-5 md:p-6">
+        <div class="flex items-start justify-between mb-4"><span class="text-xs md:text-sm font-medium" style="color: #94a3b8;">Total Balance</span>
+         <div class="w-9 h-9 md:w-10 md:h-10 rounded-lg flex items-center justify-center" style="background: rgba(59, 130, 246, 0.1);">
+          <svg width="18" height="18" viewbox="0 0 20 20" fill="none"><path d="M10 15C12.7614 15 15 12.7614 15 10C15 7.23858 12.7614 5 10 5C7.23858 5 5 7.23858 5 10C5 12.7614 7.23858 15 10 15Z" stroke="#3b82f6" stroke-width="1.5" /> <path d="M10 7v6M7 10h6" stroke="#3b82f6" stroke-width="1.5" stroke-linecap="round" />
+          </svg>
+         </div>
+        </div>
+        <p id="total-balance" class="text-2xl md:text-3xl font-bold mb-1" style="color: #f8fafc;" x-text="config.total_balance"></p>
+        <p class="text-xs md:text-sm" style="color: #64748b;">As of today</p>
+       </div>
+       <div class="card rounded-xl p-5 md:p-6">
+        <div class="flex items-start justify-between mb-4"><span class="text-xs md:text-sm font-medium" style="color: #94a3b8;">Income (This Month)</span>
+         <div class="w-9 h-9 md:w-10 md:h-10 rounded-lg flex items-center justify-center" style="background: rgba(16, 185, 129, 0.1);">
+          <svg width="18" height="18" viewbox="0 0 20 20" fill="none"><path d="M10 15V5M10 5l-4 4M10 5l4 4" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" />
+          </svg>
+         </div>
+        </div>
+        <p id="monthly-income" class="text-2xl md:text-3xl font-bold mb-1" style="color: #10b981;" x-text="config.monthly_income"></p>
+        <p class="text-xs md:text-sm" style="color: #64748b;">↑ 12% from last month</p>
+       </div>
+       <div class="card rounded-xl p-5 md:p-6">
+        <div class="flex items-start justify-between mb-4"><span class="text-xs md:text-sm font-medium" style="color: #94a3b8;">Expenses (This Month)</span>
+         <div class="w-9 h-9 md:w-10 md:h-10 rounded-lg flex items-center justify-center" style="background: rgba(239, 68, 68, 0.1);">
+          <svg width="18" height="18" viewbox="0 0 20 20" fill="none"><path d="M10 5v10M10 15l-4-4M10 15l4-4" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round" />
+          </svg>
+         </div>
+        </div>
+        <p id="monthly-expenses" class="text-2xl md:text-3xl font-bold mb-1" style="color: #ef4444;" x-text="config.monthly_expenses"></p>
+        <p class="text-xs md:text-sm" style="color: #64748b;">↓ 3% from last month</p>
+       </div>
+       <div class="card rounded-xl p-5 md:p-6">
+        <div class="flex items-start justify-between mb-4"><span class="text-xs md:text-sm font-medium" style="color: #94a3b8;">Net Cash Flow</span>
+         <div class="w-9 h-9 md:w-10 md:h-10 rounded-lg flex items-center justify-center" style="background: rgba(16, 185, 129, 0.1);">
+          <svg width="18" height="18" viewbox="0 0 20 20" fill="none"><path d="M3 10h14M14 10l-3-3M14 10l-3 3" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" />
+          </svg>
+         </div>
+        </div>
+        <p class="text-2xl md:text-3xl font-bold mb-1" style="color: #10b981;">+$31,832.50</p>
+        <p class="text-xs md:text-sm" style="color: #64748b;">This month</p>
+       </div>
+      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6"><!-- Transaction Activity -->
+       <div class="lg:col-span-2 card rounded-xl p-4 md:p-6">
+        <div class="flex items-center justify-between mb-4 md:mb-6">
+         <h3 class="text-lg md:text-xl font-semibold" style="color: #f8fafc;">Recent Transactions</h3><button class="text-xs md:text-sm font-medium px-3 md:px-4 py-2 rounded-lg" style="color: #3b82f6; background: rgba(59, 130, 246, 0.1);">View All</button>
+        </div><!-- Desktop Table -->
+        <div class="hidden md:block overflow-x-auto">
+         <table class="w-full">
+          <thead>
+           <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.06);">
+            <th class="text-left py-3 px-2 text-xs font-semibold" style="color: #94a3b8;">DATE</th>
+            <th class="text-left py-3 px-2 text-xs font-semibold" style="color: #94a3b8;">DESCRIPTION</th>
+            <th class="text-left py-3 px-2 text-xs font-semibold" style="color: #94a3b8;">CATEGORY</th>
+            <th class="text-right py-3 px-2 text-xs font-semibold" style="color: #94a3b8;">AMOUNT</th>
+            <th class="text-center py-3 px-2 text-xs font-semibold" style="color: #94a3b8;">STATUS</th>
+           </tr>
+          </thead>
+          <tbody>
+           <template x-for="txn in transactions" :key="txn.id">
+            <tr class="table-row">
+             <td class="py-4 px-2 text-sm" style="color: #cbd5e1;" x-text="txn.date"></td>
+             <td class="py-4 px-2 text-sm font-medium" style="color: #e2e8f0;" x-text="txn.description"></td>
+             <td class="py-4 px-2 text-sm" style="color: #94a3b8;" x-text="txn.category"></td>
+             <td class="py-4 px-2 text-sm font-semibold text-right" :class="txn.amount > 0 ? 'amount-positive' : 'amount-negative'" x-text="txn.amountFormatted"></td>
+             <td class="py-4 px-2 text-center"><span class="status-badge px-2 py-1 rounded" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">Verified</span></td>
+            </tr>
+           </template>
+          </tbody>
+         </table>
+        </div><!-- Mobile Card List -->
+        <div class="md:hidden space-y-3">
+         <template x-for="txn in transactions" :key="txn.id">
+          <div class="p-4 rounded-lg" style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05);">
+           <div class="flex items-start justify-between mb-2">
+            <div>
+             <p class="text-sm font-medium mb-1" style="color: #e2e8f0;" x-text="txn.description"></p>
+             <p class="text-xs" style="color: #94a3b8;" x-text="txn.date + ' • ' + txn.category"></p>
+            </div><span class="status-badge px-2 py-1 rounded" style="background: rgba(16, 185, 129, 0.1); color: #10b981; font-size: 0.65rem;">Verified</span>
+           </div>
+           <p class="text-lg font-bold" :class="txn.amount > 0 ? 'amount-positive' : 'amount-negative'" x-text="txn.amountFormatted"></p>
+          </div>
+         </template>
+        </div>
+       </div><!-- Audit Transparency Panel -->
+       <div class="audit-panel rounded-xl p-5 md:p-6">
+        <div class="flex items-center gap-2 mb-4 md:mb-6">
+         <svg width="22" height="22" viewbox="0 0 24 24" fill="none"><path d="M12 2L3 7v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /> <path d="M9 12l2 2 4-4" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+         </svg>
+         <h3 class="text-base md:text-lg font-semibold" style="color: #f8fafc;">Audit Status</h3>
+        </div>
+        <div class="space-y-3 md:space-y-4">
+         <div class="flex items-start gap-3 p-3 md:p-4 rounded-lg" style="background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.1);">
+          <svg width="18" height="18" viewbox="0 0 20 20" fill="none" style="flex-shrink: 0; margin-top: 2px;"><circle cx="10" cy="10" r="9" stroke="#10b981" stroke-width="1.5" /> <path d="M6 10l3 3 5-6" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+          <div>
+           <p class="text-xs md:text-sm font-semibold mb-1" style="color: #10b981;">Auto-categorized</p>
+           <p class="text-xs" style="color: #94a3b8;">All transactions categorized using ML</p>
+          </div>
+         </div>
+         <div class="flex items-start gap-3 p-3 md:p-4 rounded-lg" style="background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.1);">
+          <svg width="18" height="18" viewbox="0 0 20 20" fill="none" style="flex-shrink: 0; margin-top: 2px;"><rect x="4" y="4" width="12" height="12" rx="2" stroke="#10b981" stroke-width="1.5" /> <path d="M8 2v4M12 2v4M4 8h12" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" />
+          </svg>
+          <div>
+           <p class="text-xs md:text-sm font-semibold mb-1" style="color: #10b981;">Immutable Record</p>
+           <p class="text-xs" style="color: #94a3b8;">Blockchain-backed transaction log</p>
+          </div>
+         </div>
+         <div class="flex items-start gap-3 p-3 md:p-4 rounded-lg" style="background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.1);">
+          <svg width="18" height="18" viewbox="0 0 20 20" fill="none" style="flex-shrink: 0; margin-top: 2px;"><path d="M10 2v16M2 10h16" stroke="#10b981" stroke-width="1.5" stroke-linecap="round" /> <circle cx="10" cy="10" r="7" stroke="#10b981" stroke-width="1.5" />
+          </svg>
+          <div>
+           <p class="text-xs md:text-sm font-semibold mb-1" style="color: #10b981;">Compliance-ready</p>
+           <p class="text-xs" style="color: #94a3b8;">GAAP &amp; SOC 2 compliant</p>
+          </div>
+         </div>
+         <div class="mt-4 md:mt-6 p-3 md:p-4 rounded-lg" style="background: rgba(59, 130, 246, 0.05); border: 1px solid rgba(59, 130, 246, 0.1);">
+          <p class="text-xs font-medium mb-2" style="color: #3b82f6;">LAST AUDIT</p>
+          <p class="text-sm font-semibold" style="color: #e2e8f0;">December 31, 2024</p>
+          <p class="text-xs mt-1" style="color: #94a3b8;">No discrepancies found</p>
+         </div><button class="w-full px-4 py-3 rounded-lg text-xs md:text-sm font-semibold mt-4" style="background: #3b82f6; color: white;"> Generate Audit Report </button>
+        </div>
+       </div>
+      </div>
+     </div><!-- Audit View -->
+     <div x-show="currentView === 'audit'" style="display: none;" class="p-4 md:p-8">
+      <div class="mb-6 md:mb-8">
+       <h2 class="text-2xl md:text-3xl font-bold mb-2" style="color: #f8fafc;">Audit Timeline</h2>
+       <p class="text-xs md:text-sm" style="color: #94a3b8;">Complete immutable transaction history</p>
+      </div>
+      <div class="card rounded-xl p-5 md:p-8">
+       <div class="space-y-6 md:space-y-8">
+        <template x-for="(entry, index) in auditLog" :key="index">
+         <div class="timeline-item">
+          <div class="timeline-dot" :style="entry.type === 'log' ? 'background: #8b5cf6;' : ''"></div>
+          <div class="card rounded-lg p-4 md:p-5" style="background: rgba(255, 255, 255, 0.02);">
+           <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-3">
+            <div>
+             <p class="text-sm font-semibold mb-1" style="color: #e2e8f0;" x-text="entry.title"></p>
+             <p class="text-xs" style="color: #64748b;" x-text="entry.timestamp"></p>
+            </div><span class="status-badge px-3 py-1 rounded-full inline-block self-start" :style="entry.type === 'log' ? 'background: rgba(139, 92, 246, 0.1); color: #8b5cf6;' : 'background: rgba(16, 185, 129, 0.1); color: #10b981;'" x-text="entry.status"></span>
+           </div>
+           <div class="p-3 md:p-4 rounded-lg" style="background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.05);">
+            <template x-if="entry.type === 'transaction'">
+             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 text-sm">
+              <div>
+               <p class="text-xs mb-1" style="color: #64748b;">Transaction ID</p>
+               <p class="font-mono text-xs md:text-sm" style="color: #cbd5e1;" x-text="entry.txnId"></p>
+              </div>
+              <div>
+               <p class="text-xs mb-1" style="color: #64748b;">Amount</p>
+               <p class="font-semibold" :class="entry.amount > 0 ? 'amount-positive' : 'amount-negative'" x-text="entry.amountFormatted"></p>
+              </div>
+              <div>
+               <p class="text-xs mb-1" style="color: #64748b;">Category</p>
+               <p style="color: #cbd5e1;" x-text="entry.category"></p>
+              </div>
+              <div>
+               <p class="text-xs mb-1" style="color: #64748b;">Auto-classified</p>
+               <p style="color: #cbd5e1;">ML Model v2.4</p>
+              </div>
+             </div>
+            </template>
+            <template x-if="entry.type === 'log'">
+             <div>
+              <p class="text-xs mb-2" style="color: #64748b;">HASH SIGNATURE</p>
+              <p class="font-mono text-xs break-all mb-3" style="color: #cbd5e1;" x-text="entry.hash"></p>
+              <p class="text-xs" style="color: #64748b;">Record cannot be modified or deleted</p>
+             </div>
+            </template>
+           </div>
+          </div>
+         </div>
+        </template>
+       </div>
+      </div>
+     </div><!-- Placeholder Views -->
+     <div x-show="currentView === 'transactions'" style="display: none;" class="p-4 md:p-8">
+      <h2 class="text-2xl md:text-3xl font-bold mb-4" style="color: #f8fafc;">Transactions</h2>
+      <div 
+  x-data="transactionForm()" 
+  class="card rounded-xl p-6 border border-slate-700 max-w-lg"
+>
+  <h2 class="text-lg font-semibold mb-4">New Transaction</h2>
+
+  <form @submit.prevent="submit">
+
+    <!-- Date -->
+    <div class="mb-4">
+      <label class="block text-sm mb-1">Date</label>
+      <input 
+        type="date" 
+        x-model="form.date"
+        required
+        class="w-full rounded-md bg-slate-800 border border-slate-600 px-3 py-2 text-sm"
+      />
+    </div>
+
+    <!-- Description -->
+    <div class="mb-4">
+      <label class="block text-sm mb-1">Description</label>
+      <input 
+        type="text" 
+        x-model="form.description"
+        placeholder="e.g. Client Payment – Project Alpha"
+        required
+        class="w-full rounded-md bg-slate-800 border border-slate-600 px-3 py-2 text-sm"
+      />
+    </div>
+
+    <!-- Category -->
+    <div class="mb-4">
+      <label class="block text-sm mb-1">Category</label>
+      <select 
+        x-model="form.category"
+        required
+        class="w-full rounded-md bg-slate-800 border border-slate-600 px-3 py-2 text-sm"
+      >
+        <option value="">Select category</option>
+        <option>Revenue</option>
+        <option>Operations</option>
+        <option>Payroll</option>
+        <option>Software</option>
+        <option>Misc</option>
+      </select>
+    </div>
+
+    <!-- Amount -->
+    <div class="mb-6">
+      <label class="block text-sm mb-1">Amount</label>
+      <input 
+        type="number" 
+        step="0.01"
+        x-model.number="form.amount"
+        placeholder="Positive = income, Negative = expense"
+        required
+        class="w-full rounded-md bg-slate-800 border border-slate-600 px-3 py-2 text-sm"
+      />
+    </div>
+
+    <!-- Submit -->
+    <button 
+      type="submit"
+      :disabled="loading"
+      class="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 py-2 rounded-md text-sm font-semibold"
+    >
+      <span x-show="!loading">Create Transaction</span>
+      <span x-show="loading">Processing…</span>
+    </button>
+
+    <!-- Feedback -->
+    <p 
+      x-show="success" 
+      class="text-green-400 text-sm mt-4"
+    >
+      Transaction recorded and locked for audit.
+    </p>
+
+    <p 
+      x-show="error" 
+      class="text-red-400 text-sm mt-4"
+      x-text="error"
+    ></p>
+
+  </form>
+</div>
+
+     </div>
+     <div x-show="currentView === 'reports'" style="display: none;" class="p-4 md:p-8">
+      <h2 class="text-2xl md:text-3xl font-bold mb-4" style="color: #f8fafc;">Reports</h2>
+      <p style="color: #94a3b8;">Financial reports and analytics</p>
+     </div>
+     <div x-show="currentView === 'settings'" style="display: none;" class="p-4 md:p-8">
+      <h2 class="text-2xl md:text-3xl font-bold mb-4" style="color: #f8fafc;">Settings</h2>
+      <p style="color: #94a3b8;">Application settings and preferences</p>
+     </div>
+    </main>
+   </div>
+  </div>
+  <script src="script.js">
+
+  </script>
+<!-- Alpine LAST -->
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</html>

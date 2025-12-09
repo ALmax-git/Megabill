@@ -1,0 +1,114 @@
+  body {
+      box-sizing: border-box;
+  }
+
+  * {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+
+  .app-wrapper {
+      background: #0f172a;
+      min-height: 100%;
+  }
+
+  .nav-item {
+      transition: all 0.15s ease;
+  }
+
+  .nav-item:hover {
+      background: rgba(255, 255, 255, 0.05);
+  }
+
+  .nav-item.active {
+      background: rgba(255, 255, 255, 0.08);
+      border-left: 3px solid #3b82f6;
+  }
+
+  .card {
+      background: #1e293b;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      transition: all 0.2s ease;
+  }
+
+  .card:hover {
+      border-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .table-row {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      transition: background 0.15s ease;
+  }
+
+  .table-row:hover {
+      background: rgba(255, 255, 255, 0.02);
+  }
+
+  .status-badge {
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.025em;
+  }
+
+  .audit-panel {
+      background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+      border: 1px solid rgba(59, 130, 246, 0.2);
+  }
+
+  .timeline-item {
+      position: relative;
+      padding-left: 2rem;
+  }
+
+  .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: 0.4375rem;
+      top: 2rem;
+      bottom: -1rem;
+      width: 2px;
+      background: rgba(255, 255, 255, 0.1);
+  }
+
+  .timeline-item:last-child::before {
+      display: none;
+  }
+
+  .timeline-dot {
+      position: absolute;
+      left: 0;
+      top: 0.5rem;
+      width: 0.875rem;
+      height: 0.875rem;
+      border-radius: 50%;
+      background: #3b82f6;
+      border: 2px solid #0f172a;
+  }
+
+  .amount-positive {
+      color: #10b981;
+  }
+
+  .amount-negative {
+      color: #ef4444;
+  }
+
+  .mobile-menu-overlay {
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+  }
+
+  .mobile-sidebar {
+      transform: translateX(-100%);
+      transition: transform 0.3s ease;
+  }
+
+  .mobile-sidebar.open {
+      transform: translateX(0);
+  }
+
+  @media (max-width: 768px) {
+      .nav-item.active {
+          border-left: none;
+          border-bottom: 3px solid #3b82f6;
+      }
+  }
